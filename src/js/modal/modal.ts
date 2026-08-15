@@ -577,14 +577,43 @@ class NeoModal {
       });
       this.modal.querySelectorAll('[data-neo-modal-close]:not(.neo-modal--processed)').forEach((el) => {
         el.classList.add('neo-modal--processed');
-        el.addEventListener('click', e => {
-          e.preventDefault();
+        const dismiss = () => {
           if (this.options.nest) {
             NeoModal.closeTop();
           }
           else {
             this.close();
           }
+        };
+        el.addEventListener('click', e => {
+          e.preventDefault();
+          dismiss();
+        });
+        // Space has to be handled explicitly. The built-in close button is an
+        // <a>, and an anchor activates on Enter ONLY — Space scrolls the page
+        // instead — so a keyboard user pressing the key they'd expect on a
+        // control that looks like a button gets nothing.
+        //
+        // Done here rather than by switching the element to <button>, because
+        // this attribute is applied to arbitrary elements by callers, and Neo's
+        // own base.css styles form buttons strongly enough that swapping the
+        // tag would drag button chrome onto every close control that isn't
+        // expecting it.
+        //
+        // Elements that ALREADY activate on Space are left alone, or they would
+        // dismiss twice — once from here on keydown, once from the click the
+        // browser fires on release.
+        el.addEventListener('keydown', e => {
+          const event = e as KeyboardEvent;
+          if (event.key !== ' ' && event.key !== 'Spacebar') {
+            return;
+          }
+          const tag = (el as HTMLElement).tagName;
+          if (tag === 'BUTTON' || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            return;
+          }
+          event.preventDefault();
+          dismiss();
         });
       });
     }

@@ -357,8 +357,14 @@ body.has-neo-modal--loader {
     @apply block opacity-80 transition;
   }
 
+  /* `:focus-visible`, not `:focus`. The modal moves focus to this button when
+     it opens, so a plain `:focus` ring appears on every open — including the
+     ones started with a mouse, where it reads as a stray box drawn around the
+     X rather than as a focus indicator. `:focus-visible` is the browser's own
+     answer to exactly this: keyboard users still get the ring, pointer users
+     and programmatic focus do not. Nothing is lost for accessibility. */
   &:active,
-  &:focus {
+  &:focus-visible {
     > span {
       @apply z-10 rounded ring ring-primary;
     }
